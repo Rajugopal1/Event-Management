@@ -21,6 +21,6 @@ module.exports = {
         const isAuthUser = await User.passwordCompare(password, user.password)
         if (!isAuthUser) return res.status(401).send('Invalid email or password')
         const token = await user.generateAuthToken()
-        res.send({ user: user._id , token:  token})
+        res.send({ user: user , token:  token})
     }
 }
