@@ -3,8 +3,6 @@ const mongoose = require('mongoose');
 module.exports = {
     async getEventById(req, res) {
         const id = mongoose.Types.ObjectId(req.params.id)
-
-        console.log(req.user?._id);
         const event = await Event.findById(id)
         if (!event) return res.status(404).send('not found')
         res.send(event)
