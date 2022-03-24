@@ -3,20 +3,20 @@ const User = require('../models/userModel')
 
 const validationInput = async (req) => {
 
-    await check('firstName')
+    await check('city')
         .trim()
         .isLength({ min: 3, max: 20 })
-        .withMessage('First Name should be 3 to 20 characters').run(req);
-    await check('lastName')
+        .withMessage('city should be 3 to 20 characters').run(req);
+    await check('qualification')
         .trim()
         .isLength({ min: 3, max: 20 })
-        .withMessage('Last Name should be 3 to 20 characters').run(req);
-    await check('email')
-        .isEmail()
-        .normalizeEmail()
-        .withMessage("Email is not valid")
-        .custom(async email => {
-            const registerUser = await User.findOne({ email });
+        .withMessage('qualification should be 3 to 20 characters').run(req);
+    await check('userName')
+        .trim()
+        .isLength({ min: 3, max: 20 })
+        .withMessage("'userName should be 3 to 20 characters'")
+        .custom(async userName => {
+            const registerUser = await User.findOne({ userName });
             if (registerUser) throw new Error('User is already register');
         })
         .run(req);
@@ -45,10 +45,11 @@ module.exports = {
             registerUser = await User.create(registerUser)
             return res.send({
                 _id: registerUser._id,
-                firstName: registerUser.firstName,
-                lastName: registerUser.lastName,
-                email: registerUser.email,
-                password: registerUser.password
+                userName: registerUser.userName,
+                password: registerUser.password,
+                qualification: registerUser.qualification,
+                city: registerUser.city,
+                phoneNumber: registerUser.phoneNumber,
             })
         } catch (error) {
             res.status(400).send(`The user is not register because of this error ${error}`)
