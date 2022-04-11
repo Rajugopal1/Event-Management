@@ -7,6 +7,7 @@ module.exports = {
     async createEvent(req, res) {
         await check('title')
             .trim()
+            .notEmpty()
             .isLength({ min: 4, max: 30 })
             .withMessage('Title should be 4 till 30 characters').run(req);
         await check('eventType')
@@ -28,6 +29,7 @@ module.exports = {
         if (!errors.isEmpty()) return res.status(400).send(errors);
         const { title, description, inviteUsers, price,eventType} = req.body;
         const author = req.user._id;
+        const createdBy = req.user._id;
        
         let event = new Event({
             title,
@@ -36,20 +38,41 @@ module.exports = {
             price,
             author,
             inviteUsers,
+            createdBy,
             
         })
         event = await event.save();
         res.send(event)
     },
 
+    async updateEvent(req, res){
+        const eventId = req.params.id;
+        const body = req.body;
+        const userId= req.user._id;;
+        try{
+            const event = await Event.findById(eventId)
+            if (!event) return res.status(404).send('Event is not found')
+            const updatedEvent = await Event.findByIdAndUpdate({_id : eventId, createdBy: userId}, body, { new: true })
+            res.send(updatedEvent);
+
+        }
+        catch(error){
+            res.status(400).send(error);
+        }
+       
+    },
     async deletedEvent(req, res){
         const eventId = req.params.id;
         const userId= req.user._id;;
-        let event = await Event.findById(eventId)
-        if (!event) return res.status(404).send('Event is not found')
-       if(event.user.toString() !== userId)  return res.status(401).send('No authorization');
-         event = await Event.findByIdAndDelete(eventId)
-        if(!event) return res.status(404).send('Event is not found')
-        res.status(204).send('');
+        try{
+            const event = await Event.findById(eventId)
+            if (!event) return res.status(404).send('Event is not found')
+            const deletedEvent = await Event.findByIdAndDelete({_id : eventId, createdBy: userId});
+            res.send(deletedEvent);
+
+        }
+        catch(error){
+            res.status(400).send(error);
+        }
     }
 }

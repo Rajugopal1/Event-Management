@@ -2,15 +2,13 @@ const express=require("express");
 const bodyParser=require("body-parser");
 const JWT = require("jsonwebtoken");
 const mongoose= require("mongoose");
+const multer  = require('multer')
+// const upload = multer({ dest: 'uploads/' })
 const app= express();
 
 const error = require('./middlewares/error')
-const registerController = require('./controllers/register');
-const login = require("./controllers/login");
-const {paramsId, headerUserId} = require('./middlewares/objectId')
-const { userAuth, isLogin } = require('./middlewares/auth');
-const event = require('./controllers/events')
-const eventDashBoard = require('./controllers/eventDashboard');
+
+
 
 
 
@@ -23,22 +21,7 @@ app.use(bodyParser.urlencoded(
     }
 ))
 
-app.post('/user/login', login.userLogin);
-app.post('/user/registration', registerController.createUser);
-app.get('/user', registerController.getAllUser);
-app.get('/user/:id', registerController.getUser);
-
-/**Events */
-app.post('/event', [userAuth, isLogin], event.createEvent);
-app.delete('/event/:id', [userAuth, isLogin,paramsId], event.deletedEvent);
-
-/**Event Dashboard */
-app.get('/event/byuser', [userAuth, isLogin,  headerUserId], eventDashBoard.getEventsByUserID);
-app.get('/event/invitations', [userAuth, isLogin, headerUserId], eventDashBoard.invitations);
-app.get('/event', eventDashBoard.getAllEvents);
-app.get('/event/:id', [userAuth, isLogin, paramsId],eventDashBoard.getEventById);
-
-
+require('./routes/routes')(app);
 
 
 
