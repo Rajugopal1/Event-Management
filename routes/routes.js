@@ -1,9 +1,3 @@
-// const express=require("express");
-// const bodyParser=require("body-parser");
-// const session = require('express-session');
-// const JWT = require("jsonwebtoken");
-// const mongoose= require("mongoose");
-
 const error = require('../middlewares/error')
 const registerController = require('../controllers/register');
 const eventController = require('../controllers/events');
