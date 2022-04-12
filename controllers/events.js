@@ -25,24 +25,33 @@ module.exports = {
                 throw new Error('User is not exist')
             return true;
         }).run(req)
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) return res.status(400).send(errors);
-        const { title, description, inviteUsers, price,eventType} = req.body;
-        const author = req.user._id;
-        const createdBy = req.user._id;
+
+    
+        try{
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) return res.status(400).send(errors);
+            const { title, description, inviteUsers, price,eventType} = req.body;
+            const author = req.user._id;
+            const createdBy = req.user._id;
+           
+            let event = new Event({
+                title,
+                description,
+                eventType,
+                price,
+                author,
+                inviteUsers,
+                createdBy,
+                
+            })
+            event = await event.save();
+            res.send(event)
+
+        }
+        catch(error){
+            res.status(400).send(`The event is not created because of this error ${error}`)
+        }
        
-        let event = new Event({
-            title,
-            description,
-            eventType,
-            price,
-            author,
-            inviteUsers,
-            createdBy,
-            
-        })
-        event = await event.save();
-        res.send(event)
     },
 
     async updateEvent(req, res){
@@ -53,11 +62,11 @@ module.exports = {
             const event = await Event.findById(eventId)
             if (!event) return res.status(404).send('Event is not found')
             const updatedEvent = await Event.findByIdAndUpdate({_id : eventId, createdBy: userId}, body, { new: true })
-            res.send(updatedEvent);
+            res.status(200).send(updatedEvent);
 
         }
         catch(error){
-            res.status(400).send(error);
+            res.status(400).send(`The event is not updated because of this error ${error}`)
         }
        
     },
@@ -71,8 +80,8 @@ module.exports = {
             res.send(deletedEvent);
 
         }
-        catch(error){
-            res.status(400).send(error);
-        }
+       catch(error){
+           res.status(400).send(`The event is not deleted because of this error ${error}`)
+       }
     }
 }

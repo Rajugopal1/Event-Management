@@ -1,11 +1,8 @@
-const express=require("express");
-const bodyParser=require("body-parser");
-const session = require('express-session');
-const JWT = require("jsonwebtoken");
-const mongoose= require("mongoose");
-const multer  = require('multer')
-const upload = multer({ dest: 'uploads/' })
-const app= express();
+// const express=require("express");
+// const bodyParser=require("body-parser");
+// const session = require('express-session');
+// const JWT = require("jsonwebtoken");
+// const mongoose= require("mongoose");
 
 const error = require('../middlewares/error')
 const registerController = require('../controllers/register');
@@ -14,26 +11,31 @@ const eventDashboard = require('../controllers/eventDashboard');
 const login = require("../controllers/login");
 const {paramsId, headerUserId} = require('../middlewares/objectId')
 const { userAuth, isLogin } = require('../middlewares/auth');
+const { verifyRoles } = require('../middlewares/auth');
+const roles_list = require('../config/roles');
 
 
 module.exports = (app) => {
 
 app.post('/user/login', login.userLogin);
 app.post('/user/logout',[userAuth, isLogin], login.userLogout);
+app.post('/user/changepassword',[userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), login.changePassword);
+app.post('/user/resetpassword',[userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), login.resetPassword);
+app.post('/user/updatepassword',[userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), login.updatePassword);
 app.post('/user/registration', registerController.createUser);
-app.get('/user',[userAuth, isLogin], registerController.getAllUser);
-app.get('/user/:id', [userAuth, isLogin,paramsId], registerController.getUser);
+app.get('/user',[userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), registerController.getAllUser);
+app.get('/user/:id', [userAuth, isLogin,paramsId, headerUserId],verifyRoles(roles_list.ADMIN,roles_list.USER), registerController.getUser);
 
 //Events
-app.post('/event', [userAuth, isLogin], eventController.createEvent);
-app.get('/event', [userAuth, isLogin], eventDashboard.getAllEvents);
-app.get('/event/byuser', [userAuth, isLogin], eventDashboard.getEventsByUserID);
-app.get('/event/invitations', [userAuth, isLogin], eventDashboard.invitations);
-app.get('/event/list', [userAuth, isLogin], eventDashboard.list);
-app.get('/event/:id', [userAuth, isLogin], eventDashboard.getEventById);
-app.get('/eventdetails/:id', [userAuth, isLogin], eventDashboard.eventDetails);
-app.patch('/event/:id', [userAuth, isLogin], eventController.updateEvent);
-app.delete('/event/:id', [userAuth, isLogin],eventController.deletedEvent);
+app.post('/event', [userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), eventController.createEvent);
+app.get('/event', [userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), eventDashboard.getAllEvents);
+app.get('/event/byuser', [userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), eventDashboard.getEventsByUserID);
+app.get('/event/invitations', [userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), eventDashboard.invitations);
+app.get('/event/list', [userAuth, isLogin],verifyRoles(roles_list.ADMIN,roles_list.USER), eventDashboard.list);
+app.get('/event/:id', [userAuth, isLogin,paramsId, headerUserId],verifyRoles(roles_list.ADMIN,roles_list.USER), eventDashboard.getEventById);
+app.get('/eventdetails/:id', [userAuth, isLogin, paramsId, headerUserId],verifyRoles(roles_list.ADMIN,roles_list.USER), eventDashboard.eventDetails);
+app.patch('/event/:id', [userAuth, isLogin, paramsId, headerUserId],verifyRoles(roles_list.ADMIN,roles_list.USER), eventController.updateEvent);
+app.delete('/event/:id', [userAuth, isLogin, paramsId, headerUserId],verifyRoles(roles_list.ADMIN,roles_list.USER), eventController.deletedEvent);
 
 app.use(error);
 

@@ -2,15 +2,27 @@ const Event = require('../models/eventModel');
 const mongoose = require('mongoose');
 module.exports = {
     async getEventById(req, res) {
-        const id = mongoose.Types.ObjectId(req.params.id)
-        const event = await Event.findById(id)
-        if (!event) return res.status(404).send('not found')
-        res.send(event)
+
+        try{
+            const id = mongoose.Types.ObjectId(req.params.id)
+            const event = await Event.findById(id)
+            if (!event) return res.status(404).send('not found')
+            res.status(200).send(event)
+        }
+       catch(error){
+           res.status(400).send(`The event is not found because of this error ${error}`)
+       }
     },
     async getAllEvents(req, res) {
-        const query = req.params
-        const events = await Event.find();
-        res.send(events)
+        try {
+            const events = await Event.find()
+            if (!events) return res.status(404).send('not found')
+            res.send(events)
+
+        }
+        catch (error) {
+            res.status(400).send(`The event is not found because of this error ${error}`)
+        }
     },
 
     async getEventsByUserID(req, res) {
@@ -22,8 +34,8 @@ module.exports = {
         res.send(events)
 
         }
-        catch(e){
-            res.send(e);
+        catch(error){
+            res.status(400).send(`The event is not found because of this error ${error}`)
         }
         
     },
@@ -34,11 +46,11 @@ module.exports = {
         const query = { inviteUsers: userId }
         try {
             const events = await Event.find(query);
-        res.send(events)
+        res.status(200).send(events)
 
         }
-        catch(e){
-            res.send(e);
+        catch(error){
+            res.status(400).send(`The event invitations is not shown because of this error ${error}`)
         }
         
     },
@@ -66,7 +78,7 @@ module.exports = {
               const totalRecords = await Event.find().count().exec();
               const skip = (query.page - 1) * query.limit;
               const events = await Event.find({
-                  ...(Title && { title: Title }),
+                  ...(Title && { title: { $regex: new RegExp(Title, 'i') } }),
                     ...(queryObj && queryObj),
                   
                 })
@@ -83,16 +95,20 @@ module.exports = {
                 page: query.page,
                 limit: query.limit,})
         }
-        catch(error) {
-            res.send(error);
-
+        catch(error){
+            res.status(400).send(`The event list is not shown because of this error ${error}`)
         }
     },
     async eventDetails(req, res) {
         const eventId = req.params.id;
-        const event = await Event.findById(eventId).populate('inviteUsers');
-        if (!event) return res.status(404).send('not found');
-        res.send(event)
+        try {
+            const event = await Event.findById(eventId).populate('inviteUsers', '-password').exec();
+            if (!event) return res.status(404).send('not found');
+            res.status(200).send(event)
+    }
+    catch(error){
+        res.status(400).send(`The event details is not shown because of this error ${error}`)
+    }
 
     }        
         

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 
 // require('dotenv').config();
 
@@ -23,5 +24,16 @@ function isLogin(req, res, next) {
     next();
 }
 
+function verifyRoles(...roles) {
+    return async (req, res, next) => {
+        userData = await User.findOne({_id: req.user._id});
+        if (!roles.includes(userData.role)) {
+            return res.send({message: 'Access Rejected'})
+        }
+        next();
+    }
+}
+
 module.exports.userAuth = userAuth;
 module.exports.isLogin = isLogin;
+module.exports.verifyRoles = verifyRoles;
